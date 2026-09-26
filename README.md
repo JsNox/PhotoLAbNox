@@ -142,6 +142,12 @@ Carga lazy mediante [Spandrel](https://github.com/chaiNNer-org/spandrel). Tiles 
 - **HSL**: todos los colores o rangos selectivos con transiciones suaves; tono, saturación y luminosidad.
 - **Privacidad**: desenfoque o pixelado en la máscara, intensidad y borde configurables. Una selección mal pintada puede dejar partes sin cubrir: revisa antes de exportar.
 
+## Eliminar objetos del fondo
+
+Abre **Eliminar objetos**, pinta sobre el objeto y pulsa **Eliminar objeto seleccionado**. Usa el borrador o **Limpiar selección** para corregir los trazos. La expansión incluye el contorno y el radio regula la reconstrucción con Telea. Funciona sin modelos ni conexión y se aplica al resultado acumulado, con historial, Deshacer y autoguardado del proyecto activo.
+
+Puedes activar **Proteger persona y objetos conservados** tras segmentar o pintar una máscara de persona. La protección se aplica después de expandir la selección para evitar que el relleno invada la silueta. Sin protección, se modifica únicamente la selección expandida: pinta con cuidado cerca de la persona. Los objetos grandes y fondos complejos pueden dejar artefactos; utiliza Clone Stamp para corregir detalles.
+
 ## Fondo, silueta y calibración
 
 La máscara de U²-Net se muestra y puede ampliarse con el pincel **Conservar objeto**. La máscara combinada se aplica automáticamente a fondo transparente, sólido, desenfocado o fotográfico. El fondo fotográfico se ajusta al encuadre manteniendo proporción. Usa PNG/WEBP para transparencia.

@@ -77,7 +77,7 @@ def test_controller_flow(photo, person):
     s.regions = estimate(person)
     message = reshape_action(s, 20, -20, 10, 5, 60)
     assert "busto" in message and len(s.operations) == 2
-    assert len(render(s)) == 8
+    assert len(render(s)) == 9
 
 
 def test_mps_fallback_to_cpu(photo, monkeypatch):

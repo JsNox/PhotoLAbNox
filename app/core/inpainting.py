@@ -3,11 +3,17 @@ import numpy as np
 from app.utils.image_utils import rgb, result_like, mask_array, blend
 
 
-def heal(im, mask, radius=3, expansion=3):
+def heal(im, mask, radius=3, expansion=3, protected=None):
     m = np.uint8(mask_array(mask, im.size) > 0.05) * 255
     if expansion:
         k = 2 * int(expansion) + 1
         m = cv2.dilate(m, np.ones((k, k), np.uint8))
+    if protected is not None:
+        m[mask_array(protected, im.size) > 0.05] = 0
+    if not np.any(m):
+        raise ValueError(
+            "La selección está vacía o queda dentro de la persona protegida."
+        )
     if np.all(m):
         raise ValueError(
             "Telea necesita una zona sin pintar alrededor de la selección."

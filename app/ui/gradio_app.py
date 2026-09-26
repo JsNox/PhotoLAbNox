@@ -82,6 +82,7 @@ def render(s, message="Listo."):
         canvas,
         history,
         f"{message}\n{dimensions}{project}",
+        canvas,
     )
 
 
@@ -132,6 +133,19 @@ def segment_action(s):
     return (
         "Persona segmentada. Revisa la máscara y calibra las regiones si es necesario."
     )
+
+
+def remove_objects_action(s, value, radius, expansion, protect):
+    s.require()
+    mask = editor_mask(value, s.current.size)
+    if protect and s.mask is None:
+        raise ValueError(
+            "Segmenta o pinta la máscara de persona en Fondo y silueta antes de activar su protección."
+        )
+    protected = combine(s.mask, s.keep, s.current.size) if protect else None
+    out = heal(s.current, mask, radius, expansion, protected=protected)
+    commit(s, out, "Eliminar objetos del fondo")
+    return "Objeto eliminado. Revisa el resultado; puedes deshacer o pintar otra selección."
 
 
 def paint_action(s, value, tool, amount, feather, radius, expansion, strength):
@@ -399,6 +413,44 @@ def create_app():
                         0, 30, 3, step=1, label="Telea: expansión de máscara"
                     )
                 apply_paint = gr.Button("Aplicar máscara", variant="primary")
+            with gr.Tab("Eliminar objetos", render_children=True):
+                gr.Markdown(
+                    "Pinta sobre el objeto que quieres quitar del fondo y pulsa **Eliminar objeto seleccionado**. "
+                    "Cubre todo su contorno y, si hace falta, su sombra. El borrador permite corregir la selección. "
+                    "La herramienta rellena la zona con información de los píxeles vecinos, sin descargar modelos."
+                )
+                object_painter = gr.ImageEditor(
+                    label="Pinta el objeto que quieres eliminar",
+                    type="pil",
+                    format="png",
+                    image_mode="RGBA",
+                    sources=(),
+                    transforms=(),
+                    brush=gr.Brush(colors=["#ffffff"], color_mode="fixed"),
+                    eraser=gr.Eraser(),
+                    height=500,
+                )
+                with gr.Row():
+                    object_radius = gr.Slider(
+                        1, 15, 3, step=1, label="Radio de reconstrucción"
+                    )
+                    object_expansion = gr.Slider(
+                        0, 30, 3, step=1, label="Expandir selección (px)"
+                    )
+                protect_person = gr.Checkbox(
+                    False,
+                    label="Proteger persona y objetos conservados (requiere máscara de persona)",
+                )
+                with gr.Row():
+                    remove_object = gr.Button(
+                        "Eliminar objeto seleccionado", variant="primary"
+                    )
+                    clear_object = gr.Button("Limpiar selección")
+                gr.Markdown(
+                    "Funciona mejor con objetos pequeños y fondos sencillos. En fondos con patrones o al quitar "
+                    "objetos grandes puede dejar artefactos; corrige con Clone Stamp en Fondo y silueta. "
+                    "Cada aplicación se añade al historial y actualiza el proyecto si tiene autoguardado activo."
+                )
             with gr.Tab("Fondo y silueta"):
                 with gr.Row():
                     segment_button = gr.Button(
@@ -586,6 +638,7 @@ def create_app():
             painter,
             history,
             status,
+            object_painter,
         ]
 
         def bind(button, fn, inputs=()):
@@ -634,6 +687,24 @@ def create_app():
             apply_paint,
             paint_action,
             [painter, brush_tool, amount, feather, heal_radius, expansion, strength],
+        )
+        bind(
+            remove_object,
+            remove_objects_action,
+            [object_painter, object_radius, object_expansion, protect_person],
+        )
+
+        def clear_object_selection(s):
+            if s is None or s.current is None:
+                return None
+            return {"background": s.current, "layers": [], "composite": s.current}
+
+        clear_object.click(
+            clear_object_selection,
+            [state],
+            object_painter,
+            api_name=False,
+            concurrency_id="edits",
         )
         bind(segment_button, segment_action)
 
