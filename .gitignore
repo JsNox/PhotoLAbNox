@@ -1,0 +1,20 @@
+.venv/
+__pycache__/
+.pytest_cache/
+*.pyc
+.DS_Store
+.cache/
+models/*
+!models/.gitkeep
+outputs/*
+!outputs/.gitkeep
+projects/*
+!projects/.gitkeep
+presets/*
+!presets/.gitkeep
+
+# Herramientas locales y credenciales
+.ruff_cache/
+.env
+.env.*
+!.env.example

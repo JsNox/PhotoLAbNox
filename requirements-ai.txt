@@ -1,0 +1,1 @@
+# Fase generativa pausada: sin dependencias ni descargas.
